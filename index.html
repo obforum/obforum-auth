@@ -1,0 +1,19 @@
+<!DOCTYPE html>
+<html>
+<head><title>Connecting...</title></head>
+<body>
+<p style="font-family:sans-serif;text-align:center;margin-top:60px;color:#333">
+  Connecting to Google... you can close this tab and return to the tool.
+</p>
+<script>
+  if (window.location.hash.includes('access_token')) {
+    const p = new URLSearchParams(window.location.hash.replace('#', '?'));
+    const token = p.get('access_token');
+    if (token) {
+      window.opener && window.opener.postMessage({ type: 'google_token', token }, 'https://claude.ai');
+      window.close();
+    }
+  }
+</script>
+</body>
+</html>
