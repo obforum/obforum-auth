@@ -9,19 +9,17 @@
     .box { background: rgba(255,255,255,0.07); border: 1px solid rgba(255,255,255,0.15);
            border-radius: 12px; padding: 32px 40px; text-align: center; max-width: 460px; width: 90%; }
     h2 { margin: 0 0 8px; font-size: 22px; }
-    p { margin: 0 0 20px; color: #BBBBBB; font-size: 14px; line-height: 1.6; }
+    p { color: #BBBBBB; font-size: 14px; line-height: 1.6; margin: 0 0 20px; }
     .token { background: #000; border: 1px solid rgba(255,218,0,0.4); border-radius: 8px;
              padding: 12px; font-size: 11px; word-break: break-all; color: #FFDA00;
-             text-align: left; margin-bottom: 12px; user-select: all; }
-    .btn { background: #FFDA00; color: #000; border: none; border-radius: 8px;
-           padding: 10px 24px; font-size: 14px; font-weight: 700; cursor: pointer;
-           width: 100%; margin-bottom: 8px; display: block; }
-    .btn-close { background: rgba(255,255,255,0.1); color: #fff; }
+             text-align: left; margin-bottom: 12px; user-select: all; cursor: pointer; }
+    button { background: #FFDA00; color: #000; border: none; border-radius: 8px;
+             padding: 10px 24px; font-size: 14px; font-weight: 700; cursor: pointer; width: 100%; }
   </style>
 </head>
 <body>
-<div class="box" id="content">
-  <h2>⏳ Loading...</h2>
+<div class="box" id="box">
+  <h2>⏳ Connecting...</h2>
 </div>
 <script>
   const hash = window.location.hash;
@@ -29,24 +27,29 @@
     const p = new URLSearchParams(hash.replace('#', '?'));
     const token = p.get('access_token');
     if (token) {
+      // Store token in sessionStorage so the artifact can read it via polling
+      sessionStorage.setItem('obf_token', token);
+      // Also try postMessage
       if (window.opener) {
-        try { window.opener.postMessage({ type: 'google_token', token }, '*'); } catch(e) {}
+        try { window.opener.postMessage({ type:'google_token', token }, '*'); } catch(e) {}
       }
-      document.getElementById('content').innerHTML =
+      // Show token for manual copy — DO NOT auto close
+      document.getElementById('box').innerHTML =
         '<h2>✓ Connected!</h2>' +
-        '<p>1. Click <strong>Copy token</strong><br>2. Paste it into the tool<br>3. Click <strong>Close this tab</strong></p>' +
-        '<div class="token" id="tok">' + token + '</div>' +
-        '<button class="btn" onclick="copy()">Copy token</button>' +
-        '<button class="btn btn-close" onclick="window.close()">Close this tab</button>';
+        '<p>Copy the token below, paste it into the tool, then close this tab.</p>' +
+        '<div class="token" id="tok" onclick="copy()">' + token + '</div>' +
+        '<button onclick="copy()">📋 Copy token</button>';
     }
   } else {
-    document.getElementById('content').innerHTML =
+    document.getElementById('box').innerHTML =
       '<h2>❌ No token found</h2><p>Close this tab and try again.</p>';
   }
 
   function copy() {
-    navigator.clipboard.writeText(document.getElementById('tok').textContent)
-      .then(() => { document.querySelector('.btn').textContent = '✓ Copied!'; });
+    const t = document.getElementById('tok').textContent;
+    navigator.clipboard.writeText(t).then(() => {
+      document.querySelector('button').textContent = '✓ Copied! Paste into the tool now.';
+    });
   }
 </script>
 </body>
