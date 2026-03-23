@@ -1,22 +1,42 @@
 <!DOCTYPE html>
 <html>
-<head><title>Connecting...</title></head>
+<head>
+  <title>Connecting to Oslo Business Forum...</title>
+  <style>
+    body { font-family: Inter, sans-serif; background: #00092A; color: #fff; display: flex; align-items: center; justify-content: center; height: 100vh; margin: 0; flex-direction: column; gap: 16px; }
+    .box { background: rgba(255,255,255,0.07); border: 1px solid rgba(255,255,255,0.12); border-radius: 12px; padding: 32px 40px; text-align: center; max-width: 400px; }
+    h2 { margin: 0 0 8px; font-size: 20px; }
+    p { margin: 0; color: #BBBBBB; font-size: 14px; line-height: 1.6; }
+    .token-box { margin-top: 20px; background: rgba(0,0,0,0.3); border-radius: 8px; padding: 12px; font-size: 11px; word-break: break-all; color: #FFDA00; display: none; }
+  </style>
+</head>
 <body>
-<p style="font-family:sans-serif;text-align:center;margin-top:60px;color:#333;font-size:18px">
-  ✓ Connected! You can close this tab and return to the tool.
-</p>
+<div class="box">
+  <div id="status">
+    <h2>⏳ Connecting...</h2>
+    <p>Extracting your Google token...</p>
+  </div>
+  <div id="token-box" class="token-box"></div>
+</div>
 <script>
   const hash = window.location.hash;
   if (hash.includes('access_token')) {
     const p = new URLSearchParams(hash.replace('#', '?'));
     const token = p.get('access_token');
     if (token) {
-      sessionStorage.setItem('gtoken', token);
       if (window.opener) {
         window.opener.postMessage({ type: 'google_token', token }, '*');
       }
-      setTimeout(() => window.close(), 1000);
+      document.getElementById('status').innerHTML =
+        '<h2>✓ Connected!</h2><p>You can close this tab and return to the tool.<br><br>If the tool did not connect automatically, copy the token below and paste it into the tool.</p>';
+      const box = document.getElementById('token-box');
+      box.style.display = 'block';
+      box.textContent = token;
+      setTimeout(() => { try { window.close(); } catch(e){} }, 1500);
     }
+  } else {
+    document.getElementById('status').innerHTML =
+      '<h2>❌ Something went wrong</h2><p>No token found. Please close this window and try again.</p>';
   }
 </script>
 </body>
