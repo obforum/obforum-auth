@@ -12,16 +12,16 @@
     p { margin: 0 0 20px; color: #BBBBBB; font-size: 14px; line-height: 1.6; }
     .token { background: #000; border: 1px solid rgba(255,218,0,0.4); border-radius: 8px;
              padding: 12px; font-size: 11px; word-break: break-all; color: #FFDA00;
-             cursor: pointer; text-align: left; margin-bottom: 12px; }
-    button { background: #FFDA00; color: #000; border: none; border-radius: 8px;
-             padding: 10px 24px; font-size: 14px; font-weight: 700; cursor: pointer; width: 100%; }
+             text-align: left; margin-bottom: 12px; user-select: all; }
+    .btn { background: #FFDA00; color: #000; border: none; border-radius: 8px;
+           padding: 10px 24px; font-size: 14px; font-weight: 700; cursor: pointer;
+           width: 100%; margin-bottom: 8px; display: block; }
+    .btn-close { background: rgba(255,255,255,0.1); color: #fff; }
   </style>
 </head>
 <body>
-<div class="box">
-  <div id="content">
-    <h2>⏳ Loading...</h2>
-  </div>
+<div class="box" id="content">
+  <h2>⏳ Loading...</h2>
 </div>
 <script>
   const hash = window.location.hash;
@@ -29,25 +29,24 @@
     const p = new URLSearchParams(hash.replace('#', '?'));
     const token = p.get('access_token');
     if (token) {
-      // Try postMessage but don't rely on it
       if (window.opener) {
         try { window.opener.postMessage({ type: 'google_token', token }, '*'); } catch(e) {}
       }
       document.getElementById('content').innerHTML =
         '<h2>✓ Connected!</h2>' +
-        '<p>Copy the token below and paste it into the tool, then close this tab.</p>' +
-        '<div class="token" onclick="copyToken(this)">' + token + '</div>' +
-        '<button onclick="copyToken(document.querySelector(\'.token\'))">Copy token</button>';
+        '<p>1. Click <strong>Copy token</strong><br>2. Paste it into the tool<br>3. Click <strong>Close this tab</strong></p>' +
+        '<div class="token" id="tok">' + token + '</div>' +
+        '<button class="btn" onclick="copy()">Copy token</button>' +
+        '<button class="btn btn-close" onclick="window.close()">Close this tab</button>';
     }
   } else {
     document.getElementById('content').innerHTML =
       '<h2>❌ No token found</h2><p>Close this tab and try again.</p>';
   }
 
-  function copyToken(el) {
-    navigator.clipboard.writeText(el.textContent).then(() => {
-      document.querySelector('button').textContent = '✓ Copied! Now paste into the tool';
-    });
+  function copy() {
+    navigator.clipboard.writeText(document.getElementById('tok').textContent)
+      .then(() => { document.querySelector('.btn').textContent = '✓ Copied!'; });
   }
 </script>
 </body>
