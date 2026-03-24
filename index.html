@@ -7,14 +7,22 @@
            display: flex; align-items: center; justify-content: center;
            height: 100vh; margin: 0; }
     .box { background: rgba(255,255,255,0.07); border: 1px solid rgba(255,255,255,0.15);
-           border-radius: 12px; padding: 32px 40px; text-align: center; max-width: 460px; width: 90%; }
+           border-radius: 12px; padding: 32px 40px; text-align: center;
+           max-width: 460px; width: 90%; }
     h2 { margin: 0 0 8px; font-size: 22px; }
     p { color: #BBBBBB; font-size: 14px; line-height: 1.6; margin: 0 0 20px; }
+    .steps { text-align: left; background: rgba(0,0,0,0.3); border-radius: 8px;
+             padding: 14px 18px; margin-bottom: 16px; }
+    .steps li { color: #BBBBBB; font-size: 13px; margin-bottom: 6px; line-height: 1.5; }
+    .steps li strong { color: #fff; }
     .token { background: #000; border: 1px solid rgba(255,218,0,0.4); border-radius: 8px;
              padding: 12px; font-size: 11px; word-break: break-all; color: #FFDA00;
-             text-align: left; margin-bottom: 12px; user-select: all; cursor: pointer; }
-    button { background: #FFDA00; color: #000; border: none; border-radius: 8px;
-             padding: 10px 24px; font-size: 14px; font-weight: 700; cursor: pointer; width: 100%; }
+             text-align: left; margin-bottom: 12px; cursor: pointer; }
+    .btn { border: none; border-radius: 8px; padding: 11px 24px; font-size: 14px;
+           font-weight: 700; cursor: pointer; width: 100%; margin-bottom: 8px;
+           display: block; }
+    .btn-copy  { background: #FFDA00; color: #000; }
+    .btn-back  { background: rgba(255,255,255,0.12); color: #fff; }
   </style>
 </head>
 <body>
@@ -27,18 +35,20 @@
     const p = new URLSearchParams(hash.replace('#', '?'));
     const token = p.get('access_token');
     if (token) {
-      // Store token in sessionStorage so the artifact can read it via polling
-      sessionStorage.setItem('obf_token', token);
-      // Also try postMessage
       if (window.opener) {
         try { window.opener.postMessage({ type:'google_token', token }, '*'); } catch(e) {}
       }
-      // Show token for manual copy — DO NOT auto close
       document.getElementById('box').innerHTML =
         '<h2>✓ Connected!</h2>' +
-        '<p>Copy the token below, paste it into the tool, then close this tab.</p>' +
-        '<div class="token" id="tok" onclick="copy()">' + token + '</div>' +
-        '<button onclick="copy()">📋 Copy token</button>';
+        '<ol class="steps">' +
+          '<li>Click <strong>Copy token</strong> below</li>' +
+          '<li>Click <strong>Go back to the tool</strong></li>' +
+          '<li>Paste the token into the field at the bottom of the screen</li>' +
+          '<li>Click <strong>Connect with token →</strong></li>' +
+        '</ol>' +
+        '<div class="token" id="tok">' + token + '</div>' +
+        '<button class="btn btn-copy" onclick="copy()">📋 Copy token</button>' +
+        '<button class="btn btn-back" onclick="goBack()">← Go back to the tool</button>';
     }
   } else {
     document.getElementById('box').innerHTML =
@@ -46,10 +56,14 @@
   }
 
   function copy() {
-    const t = document.getElementById('tok').textContent;
-    navigator.clipboard.writeText(t).then(() => {
-      document.querySelector('button').textContent = '✓ Copied! Paste into the tool now.';
-    });
+    navigator.clipboard.writeText(document.getElementById('tok').textContent)
+      .then(() => { document.querySelector('.btn-copy').textContent = '✓ Copied!'; });
+  }
+
+  function goBack() {
+    window.history.back();
+    // Fallback if history doesn't work
+    setTimeout(() => { window.close(); }, 300);
   }
 </script>
 </body>
